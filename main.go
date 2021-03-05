@@ -1,10 +1,19 @@
 package main
 
 import (
-	"git-monitoring/routers"
+	"flag"
+	"git-monitoring/controllers"
+	"log"
+	"os"
 )
 
 func main() {
-	app := routers.SetupRouter()
-	app.Run(":8000")
+	path := flag.String("p", "", "path of the git folder")
+	flag.Parse()
+	if *path == "" {
+		flag.Usage()
+		os.Exit(2)
+	}
+	log.Println(*path)
+	controllers.LoadProjectsHomePage(*path)
 }
