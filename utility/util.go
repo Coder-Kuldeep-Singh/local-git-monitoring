@@ -3,6 +3,7 @@ package utility
 import (
 	"log"
 	"os"
+	"strings"
 )
 
 // OpenFile opens the file and folder
@@ -34,4 +35,30 @@ func CheckExpectedFile(name string, files []string) bool {
 		}
 	}
 	return false
+}
+
+// Split splits the array by common character
+func Split(character string, str []byte) []string {
+	return strings.Split(string(str), character)
+}
+
+// ChangeDirectory changes the pwd to destination direcotory
+func ChangeDirectory(dest string) {
+	err := os.Chdir(dest)
+	if err != nil {
+		log.Printf("error to change to the destination directory %s", err.Error())
+	}
+}
+
+// Distinct returns the distinct values
+func Distinct(intSlice []string) []string {
+	keys := make(map[string]bool)
+	list := []string{}
+	for _, entry := range intSlice {
+		if _, value := keys[entry]; !value {
+			keys[entry] = true
+			list = append(list, entry)
+		}
+	}
+	return list
 }
