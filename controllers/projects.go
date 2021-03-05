@@ -2,12 +2,11 @@ package controllers
 
 import (
 	"fmt"
+	"git-monitoring/contributors"
 	"git-monitoring/utility"
 	"log"
-	"net/http"
+	"os"
 	"strings"
-
-	"github.com/gin-gonic/gin"
 )
 
 var (
@@ -15,45 +14,13 @@ var (
 	ProjectList = make(map[string]string)
 )
 
-// Projects loads the all projects till while running server
-func Projects(c *gin.Context) {
-	c.HTML(http.StatusOK, "projects.tmpl.html", gin.H{
-		"project": ProjectList,
-	})
-}
-
-// PostProject loads the new projects name and path
-func PostProject(c *gin.Context) {
-	err := c.Request.ParseForm()
-	if err != nil {
-		c.HTML(http.StatusOK, "projects.tmpl.html", gin.H{
-			"project": ProjectList,
-			"Error":   err.Error(),
-		})
-		return
-	}
-	project := c.Request.Form.Get("project")
-	exists := isGit(project)
-	if !exists {
-		c.HTML(http.StatusOK, "projects.tmpl.html", gin.H{
-			"project": ProjectList,
-			"Error":   "Folder isn't a git repo",
-		})
-		return
-	}
-	msg := projectPath(project)
-	c.HTML(http.StatusOK, "projects.tmpl.html", gin.H{
-		"project": ProjectList,
-		"Error":   msg,
-	})
-}
-
 func isGit(projectPath string) bool {
 	file, err := utility.OpenFile(projectPath)
 	if err != nil {
-		log.Println("error to open folder")
+		log.Println("error to open folder", err)
 		return false
 	}
+	defer file.Close()
 	files := utility.GetAllFiles(file)
 	return utility.CheckExpectedFile(".git", files)
 
@@ -66,7 +33,8 @@ func ProjectName(project string) string {
 	return s
 }
 
-func projectPath(project string) string {
+// ProjectPath checks the path already exists or not
+func ProjectPath(project string) string {
 	s := ProjectName(project)
 	if ProjectList == nil {
 		ProjectList[project] = s
@@ -78,4 +46,32 @@ func projectPath(project string) string {
 	}
 	ProjectList[project] = s
 	return ""
+}
+
+// LoadProjectsHomePage loads the home page of all list projects
+func LoadProjectsHomePage(path string) {
+	Newpath := ProjectPath(path)
+	if Newpath != "" {
+		log.Println("path exists")
+		os.Exit(2)
+	}
+	exists := isGit(path)
+	if exists == false {
+		log.Println("folder already into the list")
+		os.Exit(2)
+	}
+	log.Println("Found git repo")
+	for key, value := range ProjectList {
+		log.Printf("%s ---> %s", key, value)
+		list, err := contributors.ContributorList(key)
+		if err != nil {
+			log.Println("error to get the contributors", err)
+			os.Exit(2)
+		}
+		d := utility.Distinct(list)
+		log.Println(d)
+	}
+	// for key, value := range contributor {
+	// 	log.Println(key, value)
+	// }
 }
