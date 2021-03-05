@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Projects</title>
+</head>
+<body>
+    
+    {{if .Error}}
+        <span>{{.Error}}</span>
+    {{end}}
+
+    {{if .project}}
+        {{ range $key, $value := .project }}
+            <a href="/project/init?path={{ $key }}"><li><strong>{{ $value }}</strong></li></a>
+        {{ end }}
+    {{end}}
+
+    
+
+    <form action=""method="POST">
+        <span>
+            Provide the Project Full Path
+            <input type="text" name="project">
+        </span>
+        <input type="submit" value="Add Project">
+    </form>
+</body>
+</html>
